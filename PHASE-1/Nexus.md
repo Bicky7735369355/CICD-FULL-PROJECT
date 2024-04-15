@@ -41,7 +41,9 @@ Then, you can run the script using:
 ./install_docker.sh
 ```
 To give permission to docker 
+```bash
 sudo chmod 666 /var/run/docker.sock
+```
 
 ## Create Nexus using docker container
 
