@@ -4,3 +4,18 @@ Senario:
 Client will Create a JIRA ticket that ticket which contains details information about what changes will be add in application.
 Then Developer see that assinged ticket then work on it and write source for the changes of application , After write the source code take his local machine and test it if the source code working fine  then
 push the new changes code to the github repository .
+      Then As a DevOps  engineer i will write the pipeline ,for  writing the pipeline i use jenkins . For jenkins 1st stage will be cloning source code from github repository . 2nd stage will be compile our source code 
+then check any error found or not . After successful compilation then in the 3rd stage run unit test case after testing in 4th stage use sonarqube to do code quality check after code quality check find out any bug , issues
+, code smell or vundability After that we are going to perform vundarbility scan on our source code to find out there is any senstive data or not , trivy tool is going to scan the dependacies of application if there 
+vundarbility , if there outdated or any other issues and its going to generate  report. After that we are going to build the application and package the appliation artifact . This application artifact  we are going to 
+publish in nexus repository ,  so that we can properly do release management different version of artifact .
+
+After that artifact ready Done our CI process then we are going to build the docker image and tag it properly . tagging is done basically define different version of docker image. After that we are going to use trivy 
+once again , Using this trivy tool we can scan the docker image to find out vundarbility in the container . After that push the docker image to docker hub repository .
+Then we are going to deploy the application on kubernetes cluster before that we have make sure that our kubernetes cluster is secure for that we are going to use a tool known as kubeaudit that is going to scan the kubernetes 
+cluster and let us know there are any specific issue in the cluster and final step  is deploy the application in kubernetes cluster . Then  we are going to verify the deployment, deployment is successful or not 
+After all last stage of our pipeline is mail notification is pipeline sucess or fail.
+
+Finally once the application deploy then we are going to monitor the application we can monitor application in 2 ways .In website level and another system level, Basically website level monoitoring use black box to find 
+how is the traffic on the website those monitoring result we can see inside graphana , In system level monitoring How mush cpu used , How much RAM is used so i am going to use jenkins for that   ,  for jenkins  im use 
+node exposer to monitoring 
