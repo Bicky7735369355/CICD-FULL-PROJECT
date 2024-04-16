@@ -84,6 +84,24 @@ Then, you can run the script using:
 ./install_docker.sh
 ```
 
-To give permission to docker 
-sudo chmod 666 /var/run/docker.sock
+****Installing trivy** **
+```bash
+#!/bin/bash
+sudo apt-get install wget apt-transport-https gnupg lsb-release
+wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+echo deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main | sudo tee -a /etc/apt/sources.list.d/trivy.list
+sudo apt-get update
+sudo apt-get install trivy -y
+```
 
+Save this script in a file, for example, `trivy.sh`, and make it executable using:
+
+```bash
+chmod +x trivy.sh
+```
+
+Then, you can run the script using:
+
+```bash
+./trivy.sh
+```
