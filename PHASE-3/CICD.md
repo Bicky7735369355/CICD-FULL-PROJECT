@@ -51,114 +51,102 @@ After installing these plugins, you may need to configure them according to your
 
 pipeline {
     agent any
-    
     tools {
-        jdk 'jdk17'
+        jdk 'jdk-17'
         maven 'maven3'
     }
-
-    enviornment {
+    environment {
         SCANNER_HOME= tool 'sonar-scanner'
     }
-
     stages {
-        stage('Git Checkout') {
+        stage('Check Out Code') {
             steps {
-               git branch: 'main', credentialsId: 'git-cred', url: 'https://github.com/jaiswaladi246/Boardgame.git'
+                git branch: 'main', credentialsId: 'gitCred', url: 'https://github.com/Bicky7735369355/java-web-app.git'
             }
         }
-        
-        stage('Compile') {
+        stage ('compile') {
             steps {
-                sh "mvn compile"
+                sh 'mvn compile'
             }
         }
-        
-        stage('Test') {
+        stage ('Test') {
             steps {
-                sh "mvn test"
+                sh 'mvn test'
+            }
+            
+        }
+        stage ('file system scan') {
+            steps {
+                sh 'trivy fs --format table -o fs-report.html .'
             }
         }
-        
-        stage('File System Scan') {
-            steps {
-                sh "trivy fs --format table -o trivy-fs-report.html ."
-            }
-        }
-        
-        stage('SonarQube Analsyis') {
+        stage ('Code analysis') {
             steps {
                 withSonarQubeEnv('sonar') {
-                    sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=BoardGame -Dsonar.projectKey=BoardGame \
-                            -Dsonar.java.binaries=. '''
+                    sh 'mvn sonar:sonar'
                 }
+                
             }
+                
         }
-        
-        stage('Quality Gate') {
+        stage ('Quality gate') {
             steps {
                 script {
-                  waitForQualityGate abortPipeline: false, credentialsId: 'sonar-token' 
+                    waitForQualityGate abortPipeline: false , credentialsId: 'sonarCred'
                 }
             }
         }
-        
-        stage('Build') {
+        stage ('Build Code') {
             steps {
-               sh "mvn package"
+                sh 'mvn clean package'
             }
         }
-        
-        stage('Publish To Nexus') {
+        stage ('Publish Artifact') {
             steps {
-               withMaven(globalMavenSettingsConfig: 'global-settings', jdk: 'jdk17', maven: 'maven3', mavenSettingsConfig: '', traceability: true) {
-                    sh "mvn deploy"
+                withMaven(globalMavenSettingsConfig: 'my-global-setting', jdk: 'jdk-17', maven: 'maven3', mavenSettingsConfig: '', traceability: true) {
+                
+                    sh 'mvn deploy'
                 }
             }
         }
-        
-        stage('Build & Tag Docker Image') {
+        stage ('Build and tag docker image') {
             steps {
-               script {
-                   withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
-                            sh "docker build -t adijaiswal/boardshack:latest ."
+                sh 'docker build -t bicky77/finally .'
+            }
+        }
+        stage ('Scan Docker Image' ) {
+            steps {
+                sh 'trivy image --format table -o image-report.html bicky77/finally'
+            }
+        }
+        stage ('Push docker image') {
+            steps {
+                script {
+                    withDockerRegistry(credentialsId: 'dockerCred', toolName: 'docker') {
+                        sh 'docker push bicky77/finally'
                     }
-               }
+                }
+                    
             }
         }
-        
-        stage('Docker Image Scan') {
+        stage ('Deploy to container') {
             steps {
-                sh "trivy image --format table -o trivy-image-report.html adijaiswal/boardshack:latest "
-            }
-        }
-        
-        stage('Push Docker Image') {
-            steps {
-               script {
-                   withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
-                            sh "docker push adijaiswal/boardshack:latest"
-                    }
-               }
-            }
-        }
-        stage('Deploy To Kubernetes') {
-            steps {
-               withKubeConfig(caCertificate: '', clusterName: 'kubernetes', contextName: '', credentialsId: 'k8-cred', namespace: 'webapps', restrictKubeConfigAccess: false, serverUrl: 'https://172.31.8.146:6443') {
-                        sh "kubectl apply -f deployment-service.yaml"
+                withKubeConfig(caCertificate: '', clusterName: 'kubernetes', contextName: '', credentialsId: 'k8sCred', namespace: 'webapps', restrictKubeConfigAccess: false, serverUrl: 'https://172.31.38.55:6443') {
+                    sh 'kubectl apply -f k8s-deploy.yml'
+                    
                 }
             }
         }
-        
-        stage('Verify the Deployment') {
+        stage ('Verify to container') {
             steps {
-               withKubeConfig(caCertificate: '', clusterName: 'kubernetes', contextName: '', credentialsId: 'k8-cred', namespace: 'webapps', restrictKubeConfigAccess: false, serverUrl: 'https://172.31.8.146:6443') {
-                        sh "kubectl get pods -n webapps"
-                        sh "kubectl get svc -n webapps"
+                withKubeConfig(caCertificate: '', clusterName: 'kubernetes', contextName: '', credentialsId: 'k8sCred', namespace: 'webapps', restrictKubeConfigAccess: false, serverUrl: 'https://172.31.38.55:6443') {
+                    sh 'kubectl get pods'
+                    sh 'kubectl get svc'
+                    
                 }
             }
         }
-        
+    }        
         
     }
     post {
