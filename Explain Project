@@ -1,0 +1,6 @@
+Senario:
+      If client wants to chnage in application adding new features .
+
+Client will Create a JIRA ticket that ticket which contains details information about what changes will be add in application.
+Then Developer see that assinged ticket then work on it and write source for the changes of application , After write the source code take his local machine and test it if the source code working fine  then
+push the new changes code to the github repository .
